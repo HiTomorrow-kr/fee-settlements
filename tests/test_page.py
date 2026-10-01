@@ -1,6 +1,9 @@
 import base64
+import json
 import re
+import time
 
+from conftest import PAGE_URL
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -145,3 +148,97 @@ def test_saved_image_is_the_sheet_at_twice_its_size(page):
     sheet = page.execute_script('const r = document.querySelector(".sheet").getBoundingClientRect(); return [r.width, r.height]')
     assert size[2] is True
     assert abs(size[0] - 2 * sheet[0]) <= 2 and abs(size[1] - 2 * sheet[1]) <= 2
+
+
+def fill_sample(page):
+    field(page, "address").send_keys("Room 547")
+    field(page, "bank").click()
+    type_over(field(page, "bank"), "Bank")
+    field(page, "account").send_keys("123-456")
+    fee_cell(page, 1, 2).send_keys("46,290")
+    type_over(fee_cell(page, 2, 1), "Custom")
+    type_over(fee_cell(page, 11, 8), "168,110")
+    type_over(fee_cell(page, 13, 8), "31,130")
+    meter(page, "전기", 1, "prev").send_keys("19075")
+    meter(page, "전기", 1, "curr").send_keys("19329")
+    meter(page, "전기", 1, "usage").send_keys("254")
+
+
+def test_saved_state_holds_the_typed_values(page):
+    fill_sample(page)
+    state = page.execute_script("return readState()")
+    assert state["version"] == 1 and state["language"] == "ko"
+    assert state["fields"]["address"] == "Room 547"
+    assert state["fields"]["bank"] == "Bank"
+    assert state["fields"]["month-total"] == "216,050"
+    assert state["fees"][0][0] == {"name": None, "amount": "46,290"}  # a default label is not saved
+    assert state["fees"][1][0]["name"] == "Custom"
+    electricity = next(m for m in state["meters"] if m["meter"] == "전기" and m["month"] == 1)
+    assert (electricity["previous"], electricity["current"], electricity["usage"]) == ("19,075", "19,329", "254")
+
+
+def test_loading_a_saved_state_restores_both_copies(page):
+    fill_sample(page)
+    state = page.execute_script("return readState()")
+    page.get(PAGE_URL)  # a fresh, empty sheet
+    assert field(page, "address").text == ""
+    page.execute_script("writeState(arguments[0])", state)
+    for copy in ("office", "resident"):
+        assert field(page, "address", copy).text == "Room 547"
+        assert field(page, "bank", copy).text == "Bank"
+        assert fee_cell(page, 1, 2, copy).text == "46,290"
+        assert fee_cell(page, 2, 1, copy).text == "Custom"
+        assert fee_cell(page, 12, 8, copy).text == "16,810"
+        assert field(page, "month-total", copy).text == "216,050"
+        assert meter(page, "전기", 1, "usage", copy).text == "254"
+    assert meter(page, "전기", 2, "prev").text == "19,329"  # the carried reading is saved and restored too
+
+
+def test_loading_replaces_what_was_on_the_sheet(page):
+    field(page, "address").send_keys("Old")
+    fee_cell(page, 3, 2).send_keys("999")
+    page.execute_script("writeState(arguments[0])", {"version": 1, "fields": {"address": "New"}})
+    assert field(page, "address").text == "New"
+    assert fee_cell(page, 3, 2).text == ""
+    assert fee_cell(page, 3, 2, "resident").text == ""
+
+
+def test_default_labels_follow_the_language_a_sheet_is_loaded_in(page):
+    page.find_element(By.CSS_SELECTOR, '[data-lang="en"]').click()
+    state = page.execute_script("return readState()")
+    assert state["language"] == "en" and state["fees"][0][0]["name"] is None and state["fields"]["bank"] is None
+    state["language"] = "ko"
+    page.execute_script("writeState(arguments[0])", state)
+    assert fee_cell(page, 1, 1).text == "일반관리비(과)"
+    assert fee_cell(page, 1, 1, "resident").text == "일반관리비(과)"
+    assert field(page, "bank").text == "계좌"
+
+
+def test_a_file_that_is_not_a_saved_sheet_is_refused(page):
+    for text in ("not json", "[]", "{}", '{"version": 2, "fields": {}}', '{"version": 1}'):
+        assert page.execute_script("return parseState(arguments[0])", text) is None, text
+    assert page.execute_script("return parseState(arguments[0]).fields.address", '{"version": 1, "fields": {"address": "x"}}') == "x"
+
+
+def test_save_button_downloads_the_sheet_as_json(page):
+    field(page, "address").send_keys("Room 547")
+    page.execute_script("""
+        const original = URL.createObjectURL;
+        URL.createObjectURL = (blob) => { window.savedBlob = blob; return original(blob); };
+    """)
+    page.find_element(By.ID, "save-json-btn").click()
+    text = page.execute_async_script("const done = arguments[arguments.length - 1]; window.savedBlob.text().then(done);")
+    assert json.loads(text)["fields"]["address"] == "Room 547"
+
+
+def test_load_button_reads_a_json_file(page, tmp_path):
+    saved = tmp_path / "sheet.json"
+    saved.write_text(json.dumps({"version": 1, "fields": {"address": "From file"}}), encoding="utf-8")
+    page.execute_script("document.getElementById('json-file').hidden = false")
+    page.find_element(By.ID, "json-file").send_keys(str(saved))
+    for _ in range(50):  # the file is read asynchronously
+        if field(page, "address").text:
+            break
+        time.sleep(0.1)
+    assert field(page, "address").text == "From file"
+    assert field(page, "address", "resident").text == "From file"

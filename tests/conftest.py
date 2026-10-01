@@ -6,7 +6,7 @@ PAGE_URL = "file://" + os.path.join(os.path.dirname(os.path.dirname(os.path.absp
 
 
 @pytest.fixture(scope="session")
-def browser():
+def browser(tmp_path_factory):
     """A headless Chrome shared by the page tests; they are skipped when it can't be started."""
     selenium = pytest.importorskip("selenium")
     from selenium import webdriver
@@ -14,6 +14,8 @@ def browser():
     options = webdriver.ChromeOptions()
     for argument in ("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--window-size=1300,1000"):
         options.add_argument(argument)
+    # Saved files from the page go to a temporary folder instead of the user's downloads.
+    options.add_experimental_option("prefs", {"download.default_directory": str(tmp_path_factory.mktemp("downloads"))})
     try:
         driver = webdriver.Chrome(options=options)
     except Exception as error:  # no Chrome or chromedriver on this machine

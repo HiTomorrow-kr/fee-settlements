@@ -125,7 +125,7 @@ source.forEach((el, i) => el.addEventListener("input", () => { mirror[i].textCon
 // Labels in Korean and English. A label is replaced only while it still shows a default text, so typed-over names stay.
 const I18N = {
   ko: {
-    pageTitle: "중간관리비 정산서", print: "출력", saveImage: "이미지로 저장",
+    pageTitle: "중간관리비 정산서", print: "출력", saveImage: "이미지로 저장", saveJson: "JSON 저장", loadJson: "JSON 불러오기", loadError: "JSON 파일을 읽을 수 없습니다.",
     title: "중간관리비", copyOffice: "(관리소용)", copyResident: "(전출자용)", area: "면적 :",
     itemName: "항 목 명", amount: "정산금액", monthTotal: "당월합계", unpaid: "미납금", lateFee: "연체료", settleTotal: "정산합계",
     type: "구분", meteringMonth: "검침월", previous: "전월", current: "당월", usage: "사용량",
@@ -140,7 +140,7 @@ const I18N = {
     taxableTotal: "과세합계", vat: "부가세", exemptTotal: "비과세합계",
   },
   en: {
-    pageTitle: "Interim Maintenance Fee Settlement Sheet", print: "Print", saveImage: "Save as image",
+    pageTitle: "Interim Maintenance Fee Settlement Sheet", print: "Print", saveImage: "Save as image", saveJson: "Save JSON", loadJson: "Load JSON", loadError: "Could not read the JSON file.",
     title: "Interim Maintenance Fee", copyOffice: "(Office Copy)", copyResident: "(Moving-out Resident Copy)", area: "Area :",
     itemName: "Item", amount: "Amount", monthTotal: "Monthly Total", unpaid: "Unpaid", lateFee: "Late Fee", settleTotal: "Settlement Total",
     type: "Type", meteringMonth: "Month", previous: "Previous", current: "Current", usage: "Usage",
@@ -171,6 +171,90 @@ document.querySelectorAll("[data-lang]").forEach((button) => button.addEventList
 let startLang = "ko";
 try { startLang = localStorage.getItem("lang") === "en" ? "en" : "ko"; } catch (e) { /* default to Korean */ }
 applyLang(startLang, true);
+
+// Saves the typed values as JSON and loads them back, so a finished sheet can be reused.
+// A label that still shows its default text is saved as null, so it follows the language it is loaded in.
+const FIELD_ORDER = ["address", "area", "period", "month-total", "unpaid", "late-fee", "settle-total", "settlement", "out-name", "out-contact", "in-name", "in-contact", "bank", "account"];
+const GROUPS = [0, 1, 2];
+const isDefaultLabel = (el) => {
+  const key = el.dataset.i18n;
+  const text = el.textContent.trim();
+  return Boolean(key) && (text === I18N.ko[key] || text === I18N.en[key]);
+};
+const currentLanguage = () => document.documentElement.lang;
+const meterCell = (name, month, column) => office.querySelector(`[data-meter="${name}"][data-m="${month}"][data-col="${column}"]`);
+
+const readState = () => ({
+  version: 1,
+  language: currentLanguage(),
+  fields: Object.fromEntries(FIELD_ORDER.map((name) => {
+    const el = office.querySelector(`[data-field="${name}"]`);
+    return [name, name === "bank" && isDefaultLabel(el) ? null : el.textContent.trim()];
+  })),
+  fees: [...feeBody.rows].map((row) => GROUPS.map((group) => ({
+    name: isDefaultLabel(row.cells[group * 3]) ? null : row.cells[group * 3].textContent.trim(),
+    amount: row.cells[group * 3 + 1].textContent.trim(),
+  }))),
+  meters: [...office.querySelectorAll('[data-meter][data-col="prev"]')].map((cell) => ({
+    meter: cell.dataset.meter,
+    month: Number(cell.dataset.m),
+    previous: cell.textContent.trim(),
+    current: meterCell(cell.dataset.meter, cell.dataset.m, "curr").textContent.trim(),
+    usage: meterCell(cell.dataset.meter, cell.dataset.m, "usage").textContent.trim(),
+  })),
+});
+
+// Returns the parsed state, or null when the text is not a saved sheet.
+const parseState = (text) => {
+  try {
+    const state = JSON.parse(text);
+    return state && state.version === 1 && typeof state.fields === "object" && state.fields !== null ? state : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const writeState = (state) => {
+  if (state.language === "ko" || state.language === "en") applyLang(state.language);
+  const lang = currentLanguage();
+  // Every cell is set, in the page's own order, so the calculated cells end up with the saved values.
+  const set = (el, text) => { el.textContent = text ?? ""; el.dispatchEvent(new Event("input")); };
+  [...feeBody.rows].forEach((row, r) => GROUPS.forEach((group) => {
+    const saved = (state.fees && state.fees[r] && state.fees[r][group]) || {};
+    const nameCell = row.cells[group * 3];
+    set(nameCell, saved.name ?? (nameCell.dataset.i18n ? I18N[lang][nameCell.dataset.i18n] : ""));
+    set(row.cells[group * 3 + 1], saved.amount);
+  }));
+  const savedMeters = state.meters || [];
+  office.querySelectorAll('[data-meter][data-col="prev"]').forEach((cell) => {
+    const saved = savedMeters.find((m) => m.meter === cell.dataset.meter && m.month === Number(cell.dataset.m)) || {};
+    set(cell, saved.previous);
+    set(meterCell(cell.dataset.meter, cell.dataset.m, "curr"), saved.current);
+    set(meterCell(cell.dataset.meter, cell.dataset.m, "usage"), saved.usage);
+  });
+  FIELD_ORDER.forEach((name) => {
+    const el = office.querySelector(`[data-field="${name}"]`);
+    set(el, name === "bank" ? (state.fields.bank ?? I18N[lang].bank) : state.fields[name]);
+  });
+};
+
+document.getElementById("save-json-btn").addEventListener("click", () => {
+  const name = office.querySelector('[data-field="address"]').textContent.trim() || "sheet";
+  const link = document.createElement("a");
+  link.download = `fee_settlement_${name}.json`;
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(readState(), null, 2)], { type: "application/json" }));
+  link.click();
+});
+const jsonFile = document.getElementById("json-file");
+document.getElementById("load-json-btn").addEventListener("click", () => jsonFile.click());
+jsonFile.addEventListener("change", async () => {
+  const file = jsonFile.files[0];
+  jsonFile.value = "";
+  if (!file) return;
+  const state = parseState(await file.text());
+  if (state) writeState(state);
+  else alert(I18N[currentLanguage()].loadError);
+});
 
 // Prints the sheet on one A4 landscape page; the controls are hidden by the print styles.
 document.getElementById("print-btn").addEventListener("click", () => {
