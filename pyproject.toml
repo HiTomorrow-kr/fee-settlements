@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "maintenance-bills"
+name = "fee-settlements"
 version = "0.1.0"
-description = "Generates maintenance fee bills (calculation, image rendering, history) as an independent program."
+description = "Fills in maintenance fee settlement sheets and saves them as images."
 requires-python = ">=3.11"
 readme = "README.md"
 dependencies = [
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-maintenance-bills = "maintenance_bills.cli:main"
+fee-settlements = "maintenance_bills.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["maintenance_bills*"]
