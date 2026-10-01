@@ -156,6 +156,27 @@
     });
   });
 
+  // 당월합계 is the sum of 과세합계, 부가세 and 비과세합계 (the last three cells of the rightmost amount column).
+  const totalParts = [10, 11, 12].map((row) => feeBody.rows[row].cells[7]);
+  const monthTotal = office.querySelector('[data-field="month-total"]');
+  const toNumber = (text) => parseFloat(text.replace(/,/g, "")) || 0;
+  totalParts.forEach((cell) => {
+    cell.addEventListener("input", () => {
+      const texts = totalParts.map((c) => c.textContent.trim());
+      const sum = Math.round(texts.reduce((acc, t) => acc + toNumber(t), 0));
+      monthTotal.textContent = texts.every((t) => t === "") ? "" : String(sum).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      monthTotal.dispatchEvent(new Event("input"));
+    });
+  });
+
+  // 부가세 is 10% of 과세합계, rounded to the nearest 10 won; it stays editable.
+  const [taxable, vat] = totalParts;
+  taxable.addEventListener("input", () => {
+    const text = taxable.textContent.trim();
+    vat.textContent = text === "" ? "" : String(Math.round(toNumber(text) * 0.1 / 10) * 10).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    vat.dispatchEvent(new Event("input"));
+  });
+
   const resident = office.cloneNode(true);
   resident.dataset.copy = "resident";
   resident.querySelector("h1").lastChild.textContent = " (전출자용)";
