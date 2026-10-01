@@ -19,9 +19,12 @@ fee-settlements는 관리비 정산서를 작성하고 이미지로 저장한다
 
 ```bash
 python -m maintenance_bills totals --readings-json '[{"name": "<meter name>", "previous": 100, "current": 110}]'
+python -m maintenance_bills generate --state-file sheet.json --language en --output sheet.pdf
 ```
 
 모든 명령은 결과를 JSON 한 줄로 stdout에 출력한다: `{"ok": true, "data": ...}` 또는 `{"ok": false, "error": "..."}`, 종료 코드 0/1. 고정 항목 금액과 계량 항목 단가는 bill_config.json에 설정하며, 검침값의 이름은 그 파일의 계량 항목 이름과 같아야 한다.
+
+generate 명령은 페이지의 JSON 저장 버튼으로 저장한 정산서를 페이지에 채워 A4 가로 PDF로 인쇄한다. Chrome이 필요하다.
 
 브라우저에서 정산서를 직접 작성하려면 templates/bill.html을 열고 칸을 눌러 입력한 뒤, 저장 버튼으로 PNG를 내려받는다.
 

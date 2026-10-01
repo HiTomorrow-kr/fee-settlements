@@ -19,9 +19,12 @@ fee-settlements fills in maintenance fee settlement sheets and saves them as ima
 
 ```bash
 python -m maintenance_bills totals --readings-json '[{"name": "<meter name>", "previous": 100, "current": 110}]'
+python -m maintenance_bills generate --state-file sheet.json --language en --output sheet.pdf
 ```
 
 Every command prints a single JSON line to stdout: `{"ok": true, "data": ...}` or `{"ok": false, "error": "..."}`, exit code 0/1. Fixed fee amounts and meter unit prices are set in bill_config.json, and each reading name must match a meter name there.
+
+The generate command fills the page with a sheet saved by its Save JSON button and prints it to an A4 landscape PDF. It needs Chrome.
 
 To fill in a sheet by hand in a browser, open templates/bill.html, click a cell and type, then use the save button to download the PNG.
 
