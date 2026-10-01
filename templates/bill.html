@@ -107,7 +107,7 @@
   const meterBody = office.querySelector('[data-field="meters"]');
   // Two meters per row: 전기/수도/가스 on the left, 온수/난방/정수 on the right.
   const pairs = [["전기", "온수"], ["수도", "난방"], ["가스", "정수"]];
-  const meterCells = (name, m) => (m === 1 ? `<td rowspan="3">${name}</td>` : "") + `<td>${m}개월</td>` + ["prev", "curr", "usage"].map((col) => `<td class="num" data-meter="${name}" data-m="${m}" data-col="${col}"></td>`).join("");
+  const meterCells = (name, m) => (m === 1 ? `<td rowspan="3" class="cat">${name}</td>` : "") + `<td>${m}개월</td>` + ["prev", "curr", "usage"].map((col) => `<td class="num" data-meter="${name}" data-m="${m}" data-col="${col}"></td>`).join("");
   for (const [left, right] of pairs) {
     for (let m = 1; m <= 3; m++) {
       meterBody.insertAdjacentHTML("beforeend", `<tr>${meterCells(left, m)}<td class="gap"></td>${meterCells(right, m)}</tr>`);
@@ -188,9 +188,31 @@
   source.forEach((el, i) => el.addEventListener("input", () => { mirror[i].textContent = el.textContent; }));
 
   // Saves the two halves as one PNG; the focus outline is dropped so it doesn't end up in the image.
+  // html2canvas draws every cell's borders itself, so a shared edge is drawn twice and comes out thick.
+  // For the saved image only, give each edge to one cell (right/bottom, plus left/top where nothing precedes it).
+  const CAPTURE_CSS = `
+    table { border-collapse: separate !important; border-spacing: 0 !important; }
+    th, td { border: 0 !important; border-right: 1px solid #000 !important; border-bottom: 1px solid #000 !important; }
+    th.gap, td.gap { border: 0 !important; }
+    .items tr > :first-child, .items .gap + th, .items .gap + td { border-left: 1px solid #000 !important; }
+    .items thead th:not(.gap) { border-top: 1px solid #000 !important; }
+    .items tbody tr:last-child td:not(.gap) { border-bottom: 0 !important; }
+    .items tfoot tr:first-child td { border-top: 1px solid #000 !important; }
+    .items tr.spacer td { border: 0 !important; }
+    .items tr.spacer + tr td { border-top: 1px solid #000 !important; }
+    .meters thead tr > :first-child, .meters thead .gap + th, .meters td.cat { border-left: 1px solid #000 !important; }
+    .meters thead th:not(.gap) { border-top: 1px solid #000 !important; }
+  `;
   const renderSheet = () => {
     if (document.activeElement) document.activeElement.blur();
-    return html2canvas(sheet, { scale: 2 });
+    return html2canvas(sheet, {
+      scale: 2,
+      onclone: (doc) => {
+        const style = doc.createElement("style");
+        style.textContent = CAPTURE_CSS;
+        doc.head.appendChild(style);
+      },
+    });
   };
   document.getElementById("save-image-btn").addEventListener("click", async () => {
     const canvas = await renderSheet();
