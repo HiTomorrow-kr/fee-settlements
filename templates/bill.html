@@ -5,8 +5,11 @@
 <title>중간관리비 정산서</title>
 <style>
   @page { size: A4 landscape; margin: 0; }
+  @media print { #controls { display: none; } }
   * { box-sizing: border-box; }
   body { margin: 0; background: #fff; color: #000; font-family: "Noto Sans CJK KR", "Malgun Gothic", sans-serif; font-size: 11px; }
+  #controls { padding: 3mm 8mm; }
+  #controls button { padding: 4px 12px; font: inherit; cursor: pointer; }
   .sheet { display: flex; width: 297mm; height: 210mm; }
   .half { flex: 1; padding: 8mm; display: flex; flex-direction: column; gap: 3mm; }
   .half + .half { border-left: 1px dashed #000; }
@@ -22,6 +25,9 @@
   th.gap, td.gap { width: 3mm; border: none; padding: 0; }
   .total { display: flex; justify-content: space-between; border: 1px solid #000; padding: 2px 4px; height: 6mm; align-items: center; }
   .row .write { display: inline-block; min-width: 30mm; text-align: right; }
+  span[data-field] { display: inline-block; vertical-align: top; min-width: 25mm; min-height: 1.4em; }
+  p[data-field] { min-height: 1.4em; }
+  [data-field="address"] { min-width: 50mm; }
   [contenteditable]:focus { outline: 2px solid #3b82f6; outline-offset: -2px; }
   .sign { display: flex; flex-direction: column; gap: 3mm; }
   .sign .row { gap: 6mm; justify-content: flex-start; }
@@ -30,8 +36,10 @@
   .pay { margin-top: auto; display: flex; flex-direction: column; gap: 1mm; }
   .pay p { min-height: 1.4em; }
 </style>
+<script src="assets/html2canvas.min.js"></script>
 </head>
 <body>
+<div id="controls"><button id="save-image-btn" type="button">이미지로 저장</button></div>
 <div class="sheet">
   <!-- Two identical halves: one kept by the office, one handed to the resident. -->
   <section class="half" data-copy="office">
@@ -128,6 +136,20 @@
   const mirror = resident.querySelectorAll(EDITABLE);
   mirror.forEach((el) => el.removeAttribute("contenteditable"));
   source.forEach((el, i) => el.addEventListener("input", () => { mirror[i].textContent = el.textContent; }));
+
+  // Saves the two halves as one PNG; the focus outline is dropped so it doesn't end up in the image.
+  const renderSheet = () => {
+    if (document.activeElement) document.activeElement.blur();
+    return html2canvas(sheet, { scale: 2 });
+  };
+  document.getElementById("save-image-btn").addEventListener("click", async () => {
+    const canvas = await renderSheet();
+    const name = office.querySelector('[data-field="address"]').textContent.trim() || "bill";
+    const link = document.createElement("a");
+    link.download = `maintenance_bill_${name}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
 </script>
 </body>
 </html>
