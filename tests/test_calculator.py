@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from maintenance_bills import calculator
+from fee_settlements import calculator
 
 CONFIG = {
     "fees": [{"name": "cleaning", "amount": 18750}, {"name": "security", "amount": 11330}],

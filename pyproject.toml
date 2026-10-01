@@ -13,10 +13,10 @@ dependencies = [
 ]
 
 [project.scripts]
-fee-settlements = "maintenance_bills.cli:main"
+fee-settlements = "fee_settlements.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["maintenance_bills*"]
+include = ["fee_settlements*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

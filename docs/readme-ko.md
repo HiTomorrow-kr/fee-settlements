@@ -18,8 +18,8 @@ fee-settlements는 관리비 정산서를 작성하고 이미지로 저장한다
 ## 사용법
 
 ```bash
-python -m maintenance_bills totals --readings-json '[{"name": "<meter name>", "previous": 100, "current": 110}]'
-python -m maintenance_bills generate --state-file sheet.json --language en --output sheet.pdf
+python -m fee_settlements totals --readings-json '[{"name": "<meter name>", "previous": 100, "current": 110}]'
+python -m fee_settlements generate --state-file sheet.json --language en --output sheet.pdf
 ```
 
 모든 명령은 결과를 JSON 한 줄로 stdout에 출력한다: `{"ok": true, "data": ...}` 또는 `{"ok": false, "error": "..."}`, 종료 코드 0/1. 고정 항목 금액과 계량 항목 단가는 bill_config.json에 설정하며, 검침값의 이름은 그 파일의 계량 항목 이름과 같아야 한다.
@@ -30,7 +30,7 @@ generate 명령은 페이지의 JSON 저장 버튼으로 저장한 정산서를 
 
 ## 연동
 
-오케스트레이터는 이 저장소를 같은 서버에 클론하고 `PYTHONPATH`에 추가한 뒤, `python -m maintenance_bills <command> ...`를 서브프로세스로 실행하고 출력되는 JSON 한 줄을 파싱한다.
+오케스트레이터는 이 저장소를 같은 서버에 클론하고 `PYTHONPATH`에 추가한 뒤, `python -m fee_settlements <command> ...`를 서브프로세스로 실행하고 출력되는 JSON 한 줄을 파싱한다.
 
 ## 테스트
 

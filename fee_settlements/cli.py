@@ -41,7 +41,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="maintenance_bills")
+    parser = argparse.ArgumentParser(prog="fee_settlements")
     sub = parser.add_subparsers(dest="command", required=True)
 
     totals = sub.add_parser("totals", help="compute the bill figures from meter readings")

@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-from maintenance_bills import cli, generator
+from fee_settlements import cli, generator
 
 # The generated PDFs need Chrome, so these tests are skipped without it.
 pytestmark = pytest.mark.usefixtures("browser")

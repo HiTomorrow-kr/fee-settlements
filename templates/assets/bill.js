@@ -293,7 +293,7 @@ document.getElementById("save-image-btn").addEventListener("click", async () => 
   const canvas = await renderSheet();
   const name = office.querySelector('[data-field="address"]').textContent.trim() || "bill";
   const link = document.createElement("a");
-  link.download = `maintenance_bill_${name}.png`;
+  link.download = `fee_settlement_${name}.png`;
   link.href = canvas.toDataURL("image/png");
   link.click();
 });
