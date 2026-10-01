@@ -12,6 +12,8 @@ fee-settlements fills in maintenance fee settlement sheets and saves them as ima
 - Automatic monthly total, VAT (10% of the taxable total, rounded to the nearest 10 won) and settlement amount, with every calculated cell still editable
 - Meter readings with thousands separators, where a month's current reading carries into the next month's previous reading
 - PNG export of the whole sheet at twice the page size
+- Korean and English labels, switched with a button on the page
+- Print button for printing the sheet on one A4 landscape page
 - No install step — works via PYTHONPATH on any host with Python 3.11+
 
 ## Usage

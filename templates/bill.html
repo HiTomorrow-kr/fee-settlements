@@ -5,11 +5,12 @@
 <title>중간관리비 정산서</title>
 <style>
   @page { size: A4 landscape; margin: 0; }
-  @media print { #controls { display: none; } }
+  @media print { #controls { display: none; } [contenteditable]:focus { outline: none; } }
   * { box-sizing: border-box; }
   body { margin: 0; background: #fff; color: #000; font-family: "Noto Sans CJK KR", "Malgun Gothic", sans-serif; font-size: 11px; }
   #controls { padding: 3mm 8mm; }
   #controls button { padding: 4px 12px; font: inherit; cursor: pointer; }
+  #controls button.active { background: #1f2937; color: #fff; }
   .sheet { display: flex; width: 297mm; height: 210mm; }
   .half { flex: 1; padding: 3mm 8mm 5mm; display: flex; flex-direction: column; gap: 1.5mm; }
   .half + .half { border-left: 1px dashed #000; }
@@ -37,40 +38,51 @@
   .sign .line { flex: 1; height: 5mm; }
   .pay { display: flex; flex-direction: column; gap: 1mm; }
   .pay p { min-height: 1.4em; }
+  body.lang-en h1 { font-size: 15px; }
+  body.lang-en .items thead th, body.lang-en .items tbody td:not(.num):not(.gap) { font-size: 8px; line-height: 1.05; padding: 1px 2px; }
+  body.lang-en .meters thead th { font-size: 8.5px; padding: 1px 2px; }
+  body.lang-en .meters td.cat { font-size: 7.5px; padding: 1px 2px; }
+  body.lang-en .meters tbody td:not(.num):not(.gap):not(.cat) { font-size: 9px; padding: 1px 2px; }
+  body.lang-en col.cat { width: 13mm; }
 </style>
 <script src="assets/html2canvas.min.js"></script>
 </head>
 <body>
-<div id="controls"><button id="save-image-btn" type="button">이미지로 저장</button></div>
+<div id="controls">
+  <button type="button" data-lang="ko">한국어</button>
+  <button type="button" data-lang="en">English</button>
+  <button id="print-btn" type="button" data-i18n="print">출력</button>
+  <button id="save-image-btn" type="button" data-i18n="saveImage">이미지로 저장</button>
+</div>
 <div class="sheet">
   <!-- Two identical halves: one kept by the office, one handed to the resident. -->
   <section class="half" data-copy="office">
-    <h1><span data-field="title">중간관리비</span> (관리소용)</h1>
+    <h1><span data-i18n="title">중간관리비</span> <span data-i18n="copyOffice">(관리소용)</span></h1>
     <p class="notice" data-field="notice"></p>
-    <div class="row"><span data-field="address"></span><span>면적 : <span class="write" data-field="area"></span></span></div>
+    <div class="row"><span data-field="address"></span><span><span data-i18n="area">면적 :</span> <span class="write" data-field="area"></span></span></div>
     <table class="items">
-      <thead><tr><th>항 목 명</th><th>정산금액</th><th class="gap"></th><th>항 목 명</th><th>정산금액</th><th class="gap"></th><th>항 목 명</th><th>정산금액</th></tr></thead>
+      <thead><tr><th data-i18n="itemName">항 목 명</th><th data-i18n="amount">정산금액</th><th class="gap"></th><th data-i18n="itemName">항 목 명</th><th data-i18n="amount">정산금액</th><th class="gap"></th><th data-i18n="itemName">항 목 명</th><th data-i18n="amount">정산금액</th></tr></thead>
       <tbody data-field="fees"></tbody>
       <tfoot>
-        <tr><td colspan="4">당월합계</td><td colspan="4" class="num" data-field="month-total"></td></tr>
+        <tr><td colspan="4" data-i18n="monthTotal">당월합계</td><td colspan="4" class="num" data-field="month-total"></td></tr>
         <tr class="spacer"><td colspan="8"></td></tr>
-        <tr><td colspan="4">미납금</td><td colspan="4" class="num" data-field="unpaid"></td></tr>
-        <tr><td colspan="4">연체료</td><td colspan="4" class="num" data-field="late-fee"></td></tr>
-        <tr><td colspan="4">정산합계</td><td colspan="4" class="num" data-field="settle-total"></td></tr>
+        <tr><td colspan="4" data-i18n="unpaid">미납금</td><td colspan="4" class="num" data-field="unpaid"></td></tr>
+        <tr><td colspan="4" data-i18n="lateFee">연체료</td><td colspan="4" class="num" data-field="late-fee"></td></tr>
+        <tr><td colspan="4" data-i18n="settleTotal">정산합계</td><td colspan="4" class="num" data-field="settle-total"></td></tr>
       </tfoot>
     </table>
     <table class="meters">
-      <thead><tr><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th><th class="gap"></th><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th></tr></thead>
+      <thead><tr><th data-i18n="type">구분</th><th data-i18n="meteringMonth">검침월</th><th data-i18n="previous">전월</th><th data-i18n="current">당월</th><th data-i18n="usage">사용량</th><th class="gap"></th><th data-i18n="type">구분</th><th data-i18n="meteringMonth">검침월</th><th data-i18n="previous">전월</th><th data-i18n="current">당월</th><th data-i18n="usage">사용량</th></tr></thead>
       <tbody data-field="meters"></tbody>
     </table>
-    <p>- 중간관리비 정산기간 : <span data-field="period"></span></p>
+    <p><span data-i18n="period">- 중간관리비 정산기간 :</span> <span data-field="period"></span></p>
     <div class="sign">
-      <div class="row"><span class="field">전출자 성명 <span class="line" data-field="out-name"></span> <span class="seal">(인)</span></span><span class="field">연락처 : <span class="line" data-field="out-contact"></span></span></div>
-      <div class="row"><span class="field">전입자 성명 <span class="line" data-field="in-name"></span> <span class="seal">(인)</span></span><span class="field">연락처 : <span class="line" data-field="in-contact"></span></span></div>
+      <div class="row"><span class="field"><span data-i18n="outName">전출자 성명</span> <span class="line" data-field="out-name"></span> <span class="seal" data-i18n="seal">(인)</span></span><span class="field"><span data-i18n="contact">연락처 :</span> <span class="line" data-field="out-contact"></span></span></div>
+      <div class="row"><span class="field"><span data-i18n="inName">전입자 성명</span> <span class="line" data-field="in-name"></span> <span class="seal" data-i18n="seal">(인)</span></span><span class="field"><span data-i18n="contact">연락처 :</span> <span class="line" data-field="in-contact"></span></span></div>
     </div>
     <div class="pay">
-      <p><span data-field="bank">계좌</span> : <span data-field="account"></span></p>
-      <p class="sum">정산금 : <span data-field="settlement"></span></p>
+      <p><span data-field="bank" data-i18n="bank">계좌</span> : <span data-field="account"></span></p>
+      <p class="sum"><span data-i18n="settlement">정산금 :</span> <span data-field="settlement"></span></p>
     </div>
   </section>
 </div>
@@ -84,31 +96,33 @@
     feeBody.insertAdjacentHTML("beforeend", "<tr><td></td><td class='num'></td><td class='gap'></td><td></td><td class='num'></td><td class='gap'></td><td></td><td class='num'></td></tr>");
   }
 
-  // Fixed item names, one list per column group. An empty string is a blank row.
-  const FEE_NAMES = [
+  // Fixed item names, one list of label keys per column group. An empty string is a blank row.
+  const FEE_KEYS = [
     [
-      "일반관리비(과)", "경비비", "청소비(과)", "",
-      "소독비", "승강기유지비", "",
-      "수선유지비", "건물보험료", "TV인터넷사용", "일반관리비(비)", "수선유지비(과)", "",
+      "generalFeeTaxable", "securityFee", "cleaningFeeTaxable", "",
+      "disinfectionFee", "elevatorUpkeep", "",
+      "repairFee", "buildingInsurance", "tvInternet", "generalFeeExempt", "repairFeeTaxable", "",
     ],
     [
-      "세대전기료", "공동전기료", "승강기전기", "TV수신료", "전력기금", "세대수도료", "공동수도료", "",
-      "세대난방비", "기본난방비", "",
-      "세대급탕비", "세대가스료",
+      "householdElectricity", "commonElectricity", "elevatorElectricity", "tvLicense", "powerFund", "householdWater", "commonWater", "",
+      "householdHeating", "basicHeating", "",
+      "householdHotWater", "householdGas",
     ],
     [
-      "가수금", "주차비", "관리비보조금", "장기수선충당금", "관리단운영위원", "난방바우처", "", "", "", "",
-      "과세합계", "부가세", "비과세합계",
+      "suspenseReceipt", "parkingFee", "feeSubsidy", "longTermReserve", "committee", "heatingVoucher", "", "", "", "",
+      "taxableTotal", "vat", "exemptTotal",
     ],
   ];
-  FEE_NAMES.forEach((names, group) => {
-    names.forEach((name, row) => { feeBody.rows[row].cells[group * 3].textContent = name; });
+  FEE_KEYS.forEach((keys, group) => {
+    keys.forEach((key, row) => { if (key) feeBody.rows[row].cells[group * 3].dataset.i18n = key; });
   });
 
   const meterBody = office.querySelector('[data-field="meters"]');
   // Two meters per row: 전기/수도/가스 on the left, 온수/난방/정수 on the right.
   const pairs = [["전기", "온수"], ["수도", "난방"], ["가스", "정수"]];
-  const meterCells = (name, m) => (m === 1 ? `<td rowspan="3" class="cat">${name}</td>` : "") + `<td>${m}개월</td>` + ["prev", "curr", "usage"].map((col) => `<td class="num" data-meter="${name}" data-m="${m}" data-col="${col}"></td>`).join("");
+  // The Korean names are the meter ids (they match bill_config.json); the label keys only decide what is shown.
+  const METER_KEYS = { "전기": "electricity", "수도": "water", "가스": "gas", "온수": "hotWater", "난방": "heating", "정수": "purifiedWater" };
+  const meterCells = (name, m) => (m === 1 ? `<td rowspan="3" class="cat" data-i18n="${METER_KEYS[name]}"></td>` : "") + `<td data-i18n="month${m}"></td>` + ["prev", "curr", "usage"].map((col) => `<td class="num" data-meter="${name}" data-m="${m}" data-col="${col}"></td>`).join("");
   for (const [left, right] of pairs) {
     for (let m = 1; m <= 3; m++) {
       meterBody.insertAdjacentHTML("beforeend", `<tr>${meterCells(left, m)}<td class="gap"></td>${meterCells(right, m)}</tr>`);
@@ -189,13 +203,69 @@
 
   const resident = office.cloneNode(true);
   resident.dataset.copy = "resident";
-  resident.querySelector("h1").lastChild.textContent = " (전출자용)";
+  resident.querySelector('h1 [data-i18n="copyOffice"]').dataset.i18n = "copyResident";
   sheet.appendChild(resident);
 
   const source = office.querySelectorAll(EDITABLE);
   const mirror = resident.querySelectorAll(EDITABLE);
   mirror.forEach((el) => el.removeAttribute("contenteditable"));
   source.forEach((el, i) => el.addEventListener("input", () => { mirror[i].textContent = el.textContent; }));
+
+  // Labels in Korean and English. A label is replaced only while it still shows a default text, so typed-over names stay.
+  const I18N = {
+    ko: {
+      pageTitle: "중간관리비 정산서", print: "출력", saveImage: "이미지로 저장",
+      title: "중간관리비", copyOffice: "(관리소용)", copyResident: "(전출자용)", area: "면적 :",
+      itemName: "항 목 명", amount: "정산금액", monthTotal: "당월합계", unpaid: "미납금", lateFee: "연체료", settleTotal: "정산합계",
+      type: "구분", meteringMonth: "검침월", previous: "전월", current: "당월", usage: "사용량",
+      month1: "1개월", month2: "2개월", month3: "3개월",
+      electricity: "전기", water: "수도", gas: "가스", hotWater: "온수", heating: "난방", purifiedWater: "정수",
+      period: "- 중간관리비 정산기간 :", outName: "전출자 성명", inName: "전입자 성명", seal: "(인)", contact: "연락처 :", bank: "계좌", settlement: "정산금 :",
+      generalFeeTaxable: "일반관리비(과)", securityFee: "경비비", cleaningFeeTaxable: "청소비(과)", disinfectionFee: "소독비", elevatorUpkeep: "승강기유지비",
+      repairFee: "수선유지비", buildingInsurance: "건물보험료", tvInternet: "TV인터넷사용", generalFeeExempt: "일반관리비(비)", repairFeeTaxable: "수선유지비(과)",
+      householdElectricity: "세대전기료", commonElectricity: "공동전기료", elevatorElectricity: "승강기전기", tvLicense: "TV수신료", powerFund: "전력기금",
+      householdWater: "세대수도료", commonWater: "공동수도료", householdHeating: "세대난방비", basicHeating: "기본난방비", householdHotWater: "세대급탕비", householdGas: "세대가스료",
+      suspenseReceipt: "가수금", parkingFee: "주차비", feeSubsidy: "관리비보조금", longTermReserve: "장기수선충당금", committee: "관리단운영위원", heatingVoucher: "난방바우처",
+      taxableTotal: "과세합계", vat: "부가세", exemptTotal: "비과세합계",
+    },
+    en: {
+      pageTitle: "Interim Maintenance Fee Settlement Sheet", print: "Print", saveImage: "Save as image",
+      title: "Interim Maintenance Fee", copyOffice: "(Office Copy)", copyResident: "(Moving-out Resident Copy)", area: "Area :",
+      itemName: "Item", amount: "Amount", monthTotal: "Monthly Total", unpaid: "Unpaid", lateFee: "Late Fee", settleTotal: "Settlement Total",
+      type: "Type", meteringMonth: "Month", previous: "Previous", current: "Current", usage: "Usage",
+      month1: "Month 1", month2: "Month 2", month3: "Month 3",
+      electricity: "Electricity", water: "Water", gas: "Gas", hotWater: "Hot Water", heating: "Heating", purifiedWater: "Purified Water",
+      period: "- Interim fee settlement period :", outName: "Outgoing resident", inName: "Incoming resident", seal: "(Seal)", contact: "Contact :", bank: "Account", settlement: "Settlement Amount :",
+      generalFeeTaxable: "General fee (taxable)", securityFee: "Security fee", cleaningFeeTaxable: "Cleaning fee (taxable)", disinfectionFee: "Disinfection fee", elevatorUpkeep: "Elevator upkeep",
+      repairFee: "Repair & upkeep", buildingInsurance: "Building insurance", tvInternet: "TV & internet", generalFeeExempt: "General fee (exempt)", repairFeeTaxable: "Repair & upkeep (taxable)",
+      householdElectricity: "Household electricity", commonElectricity: "Common electricity", elevatorElectricity: "Elevator electricity", tvLicense: "TV license fee", powerFund: "Power fund",
+      householdWater: "Household water", commonWater: "Common water", householdHeating: "Household heating", basicHeating: "Basic heating", householdHotWater: "Household hot water", householdGas: "Household gas",
+      suspenseReceipt: "Suspense receipt", parkingFee: "Parking fee", feeSubsidy: "Fee subsidy", longTermReserve: "Long-term repair reserve", committee: "Management committee", heatingVoucher: "Heating voucher",
+      taxableTotal: "Taxable total", vat: "VAT", exemptTotal: "Tax-exempt total",
+    },
+  };
+  const applyLang = (lang, initial = false) => {
+    document.documentElement.lang = lang;
+    document.body.classList.toggle("lang-en", lang === "en");
+    document.title = I18N[lang].pageTitle;
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.dataset.i18n;
+      const text = el.textContent.trim();
+      if (initial || text === I18N.ko[key] || text === I18N.en[key]) el.textContent = I18N[lang][key];
+    });
+    document.querySelectorAll("[data-lang]").forEach((button) => button.classList.toggle("active", button.dataset.lang === lang));
+    try { localStorage.setItem("lang", lang); } catch (e) { /* the choice just is not remembered */ }
+  };
+  document.querySelectorAll("[data-lang]").forEach((button) => button.addEventListener("click", () => applyLang(button.dataset.lang)));
+  let startLang = "ko";
+  try { startLang = localStorage.getItem("lang") === "en" ? "en" : "ko"; } catch (e) { /* default to Korean */ }
+  applyLang(startLang, true);
+
+  // Prints the sheet on one A4 landscape page; the controls are hidden by the print styles.
+  document.getElementById("print-btn").addEventListener("click", () => {
+    if (document.activeElement) document.activeElement.blur();
+    window.print();
+  });
 
   // Saves the two halves as one PNG; the focus outline is dropped so it doesn't end up in the image.
   // html2canvas draws every cell's borders itself, so a shared edge is drawn twice and comes out thick.
