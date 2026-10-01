@@ -26,6 +26,7 @@
   th.gap, td.gap { width: 1.5mm; border: none; padding: 0; }
   .row .write { display: inline-block; min-width: 30mm; text-align: right; }
   span[data-field] { display: inline-block; vertical-align: top; min-width: 25mm; min-height: 1.4em; }
+  span[data-field="bank"] { min-width: 1em; }
   p[data-field] { min-height: 1.4em; }
   [data-field="address"] { min-width: 50mm; }
   [contenteditable]:focus { outline: 2px solid #3b82f6; outline-offset: -2px; }
@@ -68,7 +69,7 @@
       <div class="row"><span class="field">전입자 성명 <span class="line" data-field="in-name"></span> <span class="seal">(인)</span></span><span class="field">연락처 : <span class="line" data-field="in-contact"></span></span></div>
     </div>
     <div class="pay">
-      <p>계좌 : <span data-field="account"></span></p>
+      <p><span data-field="bank">계좌</span> : <span data-field="account"></span></p>
       <p class="sum">정산금 : <span data-field="settlement"></span></p>
     </div>
   </section>
@@ -118,7 +119,7 @@
   const EDITABLE = [
     '[data-field="address"]', '[data-field="area"]',
     '[data-field="period"]', '[data-field="month-total"]', '[data-field="unpaid"]', '[data-field="late-fee"]', '[data-field="settle-total"]', '[data-field="out-name"]', '[data-field="out-contact"]',
-    '[data-field="in-name"]', '[data-field="in-contact"]', '[data-field="account"]', '[data-field="settlement"]',
+    '[data-field="in-name"]', '[data-field="in-contact"]', '[data-field="bank"]', '[data-field="account"]', '[data-field="settlement"]',
     '[data-field="fees"] td:not(.gap)', '[data-field="meters"] td.num',
   ].join(",");
   office.querySelectorAll(EDITABLE).forEach((el) => {
@@ -175,6 +176,15 @@
     const text = taxable.textContent.trim();
     vat.textContent = text === "" ? "" : String(Math.round(toNumber(text) * 0.1 / 10) * 10).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     vat.dispatchEvent(new Event("input"));
+  });
+
+  // 정산금 repeats 정산합계 with the won sign; it stays editable.
+  const settleTotal = office.querySelector('[data-field="settle-total"]');
+  const settlement = office.querySelector('[data-field="settlement"]');
+  settleTotal.addEventListener("input", () => {
+    const text = settleTotal.textContent.trim();
+    settlement.textContent = text === "" ? "" : `${text}원`;
+    settlement.dispatchEvent(new Event("input"));
   });
 
   const resident = office.cloneNode(true);
