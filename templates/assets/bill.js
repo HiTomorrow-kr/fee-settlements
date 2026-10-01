@@ -112,6 +112,17 @@ settleTotal.addEventListener("input", () => {
   settlement.dispatchEvent(new Event("input"));
 });
 
+// The settlement total is the monthly total plus the unpaid amount and the late fee; it stays editable.
+const settleParts = ["month-total", "unpaid", "late-fee"].map((name) => office.querySelector(`[data-field="${name}"]`));
+settleParts.forEach((part) => {
+  part.addEventListener("input", () => {
+    const texts = settleParts.map((el) => el.textContent.trim());
+    const sum = Math.round(texts.reduce((acc, t) => acc + toNumber(t), 0));
+    settleTotal.textContent = texts.every((t) => t === "") ? "" : String(sum).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    settleTotal.dispatchEvent(new Event("input"));
+  });
+});
+
 const resident = office.cloneNode(true);
 resident.dataset.copy = "resident";
 resident.querySelector('h1 [data-i18n="copyOffice"]').dataset.i18n = "copyResident";

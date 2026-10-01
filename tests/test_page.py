@@ -27,6 +27,12 @@ def type_over(element, text):
     element.send_keys(text)
 
 
+def clear(element):
+    element.click()
+    element.send_keys(Keys.CONTROL, "a")
+    element.send_keys(Keys.DELETE)
+
+
 def text_of(page, selector):
     return page.execute_script("return document.querySelector(arguments[0]).textContent", selector)
 
@@ -242,3 +248,29 @@ def test_load_button_reads_a_json_file(page, tmp_path):
         time.sleep(0.1)
     assert field(page, "address").text == "From file"
     assert field(page, "address", "resident").text == "From file"
+
+
+def test_settlement_total_is_the_monthly_total_plus_unpaid_and_late_fee(page):
+    type_over(fee_cell(page, 11, 8), "168,110")
+    type_over(fee_cell(page, 13, 8), "31,130")
+    assert field(page, "settle-total").text == "216,050"  # no unpaid amount or late fee yet
+    type_over(field(page, "unpaid"), "1,000")
+    assert field(page, "settle-total").text == "217,050"
+    type_over(field(page, "late-fee"), "500")
+    assert field(page, "settle-total").text == "217,550"
+    assert field(page, "settle-total", "resident").text == "217,550"
+    assert field(page, "settlement").text == "217,550원"
+    clear(field(page, "unpaid"))
+    assert field(page, "settle-total").text == "216,550"
+
+
+def test_settlement_total_with_only_an_unpaid_amount(page):
+    type_over(field(page, "unpaid"), "2,500")
+    assert field(page, "settle-total").text == "2,500"
+
+
+def test_settlement_total_can_be_typed_over(page):
+    type_over(fee_cell(page, 13, 8), "31,130")
+    type_over(field(page, "settle-total"), "999")
+    assert field(page, "settle-total").text == "999"
+    assert field(page, "settlement").text == "999원"

@@ -9,7 +9,7 @@ fee-settlements fills in maintenance fee settlement sheets and saves them as ima
 - A settlement sheet page that works in a browser without a server
 - Two identical copies on one A4 landscape sheet: whatever is typed into the left copy appears in the right copy
 - Direct entry of item amounts, meter readings, the settlement period, the bank account and the signature lines
-- Automatic monthly total, VAT (10% of the taxable total, rounded to the nearest 10 won) and settlement amount, with every calculated cell still editable
+- Automatic monthly total, VAT (10% of the taxable total, rounded to the nearest 10 won), settlement total and settlement amount, with every calculated cell still editable
 - Meter readings with thousands separators, where a month's current reading carries into the next month's previous reading
 - PNG export of the whole sheet at twice the page size
 - Print button for printing the sheet on one A4 landscape page
