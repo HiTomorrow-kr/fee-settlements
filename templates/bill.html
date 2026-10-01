@@ -32,6 +32,7 @@
   .sign { display: flex; flex-direction: column; gap: 1.5mm; }
   .sign .row { gap: 6mm; justify-content: flex-start; }
   .sign .field { flex: 1; display: flex; align-items: flex-start; gap: 2mm; white-space: nowrap; }
+  .sign .seal { margin-right: 13mm; }
   .sign .line { flex: 1; height: 5mm; }
   .pay { display: flex; flex-direction: column; gap: 1mm; }
   .pay p { min-height: 1.4em; }
@@ -63,8 +64,8 @@
     </table>
     <p>- 중간관리비 정산기간 : <span data-field="period"></span></p>
     <div class="sign">
-      <div class="row"><span class="field">전출자 성명 <span class="line" data-field="out-name"></span> (인)</span><span class="field">연락처 : <span class="line" data-field="out-contact"></span></span></div>
-      <div class="row"><span class="field">전입자 성명 <span class="line" data-field="in-name"></span> (인)</span><span class="field">연락처 : <span class="line" data-field="in-contact"></span></span></div>
+      <div class="row"><span class="field">전출자 성명 <span class="line" data-field="out-name"></span> <span class="seal">(인)</span></span><span class="field">연락처 : <span class="line" data-field="out-contact"></span></span></div>
+      <div class="row"><span class="field">전입자 성명 <span class="line" data-field="in-name"></span> <span class="seal">(인)</span></span><span class="field">연락처 : <span class="line" data-field="in-contact"></span></span></div>
     </div>
     <div class="pay">
       <p>계좌 : <span data-field="account"></span></p>
