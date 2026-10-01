@@ -19,9 +19,10 @@
   .notice:empty { display: none; }
   .row { display: flex; justify-content: space-between; min-height: 1.4em; }
   table { width: 100%; border-collapse: collapse; }
-  th, td { border: 1px solid #000; padding: 2px 4px; height: 6mm; text-align: center; }
+  th, td { border: 1px solid #000; padding: 2px 4px; height: 5.8mm; text-align: center; }
   td.num { text-align: right; }
   .items, .meters { table-layout: fixed; }
+  tr.spacer td { height: 1.5mm; padding: 0; border: none; }
   th.gap, td.gap { width: 1.5mm; border: none; padding: 0; }
   .row .write { display: inline-block; min-width: 30mm; text-align: right; }
   span[data-field] { display: inline-block; vertical-align: top; min-width: 25mm; min-height: 1.4em; }
@@ -48,7 +49,13 @@
     <table class="items">
       <thead><tr><th>항 목 명</th><th>정산금액</th><th class="gap"></th><th>항 목 명</th><th>정산금액</th><th class="gap"></th><th>항 목 명</th><th>정산금액</th></tr></thead>
       <tbody data-field="fees"></tbody>
-      <tfoot><tr><td colspan="4">당월합계</td><td colspan="4" class="num" data-field="month-total"></td></tr></tfoot>
+      <tfoot>
+        <tr><td colspan="4">당월합계</td><td colspan="4" class="num" data-field="month-total"></td></tr>
+        <tr class="spacer"><td colspan="8"></td></tr>
+        <tr><td colspan="4">미납금</td><td colspan="4" class="num" data-field="unpaid"></td></tr>
+        <tr><td colspan="4">연체료</td><td colspan="4" class="num" data-field="late-fee"></td></tr>
+        <tr><td colspan="4">정산합계</td><td colspan="4" class="num" data-field="settle-total"></td></tr>
+      </tfoot>
     </table>
     <table class="meters">
       <thead><tr><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th><th class="gap"></th><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th></tr></thead>
@@ -108,7 +115,7 @@
   // Every fillable cell is editable on the left half only; the right half mirrors it.
   const EDITABLE = [
     '[data-field="address"]', '[data-field="area"]',
-    '[data-field="month-total"]', '[data-field="out-name"]', '[data-field="out-contact"]',
+    '[data-field="month-total"]', '[data-field="unpaid"]', '[data-field="late-fee"]', '[data-field="settle-total"]', '[data-field="out-name"]', '[data-field="out-contact"]',
     '[data-field="in-name"]', '[data-field="in-contact"]', '[data-field="account"]', '[data-field="settlement"]',
     '[data-field="fees"] td:not(.gap)', '[data-field="meters"] td.num',
   ].join(",");
