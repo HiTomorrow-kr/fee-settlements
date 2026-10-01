@@ -22,6 +22,7 @@
   th.gap, td.gap { width: 3mm; border: none; padding: 0; }
   .total { display: flex; justify-content: space-between; border: 1px solid #000; padding: 2px 4px; height: 6mm; align-items: center; }
   .row .write { display: inline-block; min-width: 30mm; text-align: right; }
+  [contenteditable]:focus { outline: 2px solid #3b82f6; outline-offset: -2px; }
   .sign { display: flex; flex-direction: column; gap: 3mm; }
   .sign .row { gap: 6mm; justify-content: flex-start; }
   .sign .field { flex: 1; display: flex; align-items: flex-end; gap: 2mm; white-space: nowrap; }
@@ -70,17 +71,63 @@
   const meterBody = office.querySelector('[data-field="meters"]');
   // Two meters per row: 전기/수도/가스 on the left, 온수/난방/정수 on the right.
   const pairs = [["전기", "온수"], ["수도", "난방"], ["가스", "정수"]];
-  const meterCells = (name, m) => (m === 1 ? `<td rowspan="3">${name}</td>` : "") + `<td>${m}개월</td><td class="num"></td><td class="num"></td><td class="num"></td>`;
+  const meterCells = (name, m) => (m === 1 ? `<td rowspan="3">${name}</td>` : "") + `<td>${m}개월</td>` + ["prev", "curr", "usage"].map((col) => `<td class="num" data-meter="${name}" data-m="${m}" data-col="${col}"></td>`).join("");
   for (const [left, right] of pairs) {
     for (let m = 1; m <= 3; m++) {
       meterBody.insertAdjacentHTML("beforeend", `<tr>${meterCells(left, m)}<td class="gap"></td>${meterCells(right, m)}</tr>`);
     }
   }
 
+  // Every fillable cell is editable on the left half only; the right half mirrors it.
+  const EDITABLE = [
+    '[data-field="address"]', '[data-field="area"]', '[data-field="period"]',
+    '[data-field="month-total"]', '[data-field="account"]', '[data-field="settlement"]',
+    '[data-field="fees"] td:not(.gap)', '[data-field="meters"] td.num',
+  ].join(",");
+  office.querySelectorAll(EDITABLE).forEach((el) => {
+    el.setAttribute("contenteditable", "plaintext-only");
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter") e.preventDefault(); });
+  });
+
+  // Meter readings take digits and one decimal point, and group the integer part with commas.
+  const formatReading = (text) => {
+    const [int, ...rest] = text.replace(/[^0-9.]/g, "").split(".");
+    const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return rest.length ? `${grouped}.${rest.join("")}` : grouped;
+  };
+  office.querySelectorAll('[data-field="meters"] td.num').forEach((el) => {
+    el.addEventListener("beforeinput", (e) => {
+      if (e.data && /[^0-9.]/.test(e.data)) e.preventDefault();
+    });
+    el.addEventListener("input", () => {
+      const formatted = formatReading(el.textContent);
+      if (formatted === el.textContent) return;
+      el.textContent = formatted;
+      const sel = getSelection();
+      sel.selectAllChildren(el);
+      sel.collapseToEnd();
+    });
+  });
+
+  // A month's current reading carries into the next month's previous reading, which stays editable.
+  office.querySelectorAll('[data-col="curr"]').forEach((el) => {
+    el.addEventListener("input", () => {
+      const next = office.querySelector(`[data-meter="${el.dataset.meter}"][data-m="${+el.dataset.m + 1}"][data-col="prev"]`);
+      if (!next) return;
+      next.textContent = el.textContent;
+      next.dispatchEvent(new Event("input"));
+    });
+  });
+
   const resident = office.cloneNode(true);
   resident.dataset.copy = "resident";
   resident.querySelector("h1").lastChild.textContent = " (전출자용)";
   sheet.appendChild(resident);
+
+  const source = office.querySelectorAll(EDITABLE);
+  const mirror = resident.querySelectorAll(EDITABLE);
+  mirror.forEach((el) => el.removeAttribute("contenteditable"));
+  source.forEach((el, i) => el.addEventListener("input", () => { mirror[i].textContent = el.textContent; }));
 </script>
 </body>
 </html>
