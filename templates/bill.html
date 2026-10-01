@@ -55,8 +55,8 @@
       <tbody data-field="meters"></tbody>
     </table>
     <div class="sign">
-      <div class="row"><span class="field">전출자 성명 <span class="line"></span> (인)</span><span class="field">연락처 : <span class="line"></span></span></div>
-      <div class="row"><span class="field">전입자 성명 <span class="line"></span> (인)</span><span class="field">연락처 : <span class="line"></span></span></div>
+      <div class="row"><span class="field">전출자 성명 <span class="line" data-field="out-name"></span> (인)</span><span class="field">연락처 : <span class="line" data-field="out-contact"></span></span></div>
+      <div class="row"><span class="field">전입자 성명 <span class="line" data-field="in-name"></span> (인)</span><span class="field">연락처 : <span class="line" data-field="in-contact"></span></span></div>
     </div>
     <div class="pay">
       <p>계좌 : <span data-field="account"></span></p>
@@ -108,7 +108,8 @@
   // Every fillable cell is editable on the left half only; the right half mirrors it.
   const EDITABLE = [
     '[data-field="address"]', '[data-field="area"]',
-    '[data-field="month-total"]', '[data-field="account"]', '[data-field="settlement"]',
+    '[data-field="month-total"]', '[data-field="out-name"]', '[data-field="out-contact"]',
+    '[data-field="in-name"]', '[data-field="in-contact"]', '[data-field="account"]', '[data-field="settlement"]',
     '[data-field="fees"] td:not(.gap)', '[data-field="meters"] td.num',
   ].join(",");
   office.querySelectorAll(EDITABLE).forEach((el) => {
