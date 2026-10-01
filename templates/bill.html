@@ -12,15 +12,20 @@
   .half + .half { border-left: 1px dashed #000; }
   h1 { margin: 0; text-align: center; font-size: 18px; }
   p { margin: 0; }
-  .notice { font-size: 10px; min-height: 1.4em; }
+  .notice { font-size: 10px; }
+  .notice:empty { display: none; }
   .row { display: flex; justify-content: space-between; min-height: 1.4em; }
   table { width: 100%; border-collapse: collapse; }
   th, td { border: 1px solid #000; padding: 2px 4px; height: 6mm; text-align: center; }
   td.num { text-align: right; }
-  .items { table-layout: fixed; }
-  .items th.gap, .items td.gap { width: 3mm; border: none; padding: 0; }
+  .items, .meters { table-layout: fixed; }
+  th.gap, td.gap { width: 3mm; border: none; padding: 0; }
   .total { display: flex; justify-content: space-between; border: 1px solid #000; padding: 2px 4px; height: 6mm; align-items: center; }
-  .sign { display: flex; flex-direction: column; gap: 2mm; }
+  .row .write { display: inline-block; min-width: 30mm; text-align: right; }
+  .sign { display: flex; flex-direction: column; gap: 3mm; }
+  .sign .row { gap: 6mm; justify-content: flex-start; }
+  .sign .field { flex: 1; display: flex; align-items: flex-end; gap: 2mm; white-space: nowrap; }
+  .sign .line { flex: 1; height: 7mm; }
   .pay { margin-top: auto; display: flex; flex-direction: column; gap: 1mm; }
   .pay p { min-height: 1.4em; }
 </style>
@@ -31,20 +36,20 @@
   <section class="half" data-copy="office">
     <h1><span data-field="title">중간관리비</span> (관리소용)</h1>
     <p class="notice" data-field="notice"></p>
-    <div class="row"><span data-field="address"></span><span data-field="area"></span></div>
+    <div class="row"><span data-field="address"></span><span>면적 : <span class="write" data-field="area"></span></span></div>
     <table class="items">
       <thead><tr><th>항 목 명</th><th>정산금액</th><th class="gap"></th><th>항 목 명</th><th>정산금액</th><th class="gap"></th><th>항 목 명</th><th>정산금액</th></tr></thead>
       <tbody data-field="fees"></tbody>
     </table>
     <div class="total"><span>당월합계</span><span data-field="month-total"></span></div>
     <table class="meters">
-      <thead><tr><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th></tr></thead>
+      <thead><tr><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th><th class="gap"></th><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th></tr></thead>
       <tbody data-field="meters"></tbody>
     </table>
     <p data-field="period"></p>
     <div class="sign">
-      <div class="row"><span>전출자 성명 (인)</span><span>연락처:</span></div>
-      <div class="row"><span>전입자 성명 (인)</span><span>연락처:</span></div>
+      <div class="row"><span class="field">전출자 성명 <span class="line"></span> (인)</span><span class="field">연락처 : <span class="line"></span></span></div>
+      <div class="row"><span class="field">전입자 성명 <span class="line"></span> (인)</span><span class="field">연락처 : <span class="line"></span></span></div>
     </div>
     <div class="pay">
       <p>계좌 : <span data-field="account"></span></p>
@@ -63,10 +68,12 @@
   }
 
   const meterBody = office.querySelector('[data-field="meters"]');
-  for (const name of ["전기", "수도", "가스"]) {
+  // Two meters per row: 전기/수도/가스 on the left, 온수/난방/정수 on the right.
+  const pairs = [["전기", "온수"], ["수도", "난방"], ["가스", "정수"]];
+  const meterCells = (name, m) => (m === 1 ? `<td rowspan="3">${name}</td>` : "") + `<td>${m}개월</td><td class="num"></td><td class="num"></td><td class="num"></td>`;
+  for (const [left, right] of pairs) {
     for (let m = 1; m <= 3; m++) {
-      const head = m === 1 ? `<td rowspan="3">${name}</td>` : "";
-      meterBody.insertAdjacentHTML("beforeend", `<tr>${head}<td>${m}개월</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>`);
+      meterBody.insertAdjacentHTML("beforeend", `<tr>${meterCells(left, m)}<td class="gap"></td>${meterCells(right, m)}</tr>`);
     }
   }
 
