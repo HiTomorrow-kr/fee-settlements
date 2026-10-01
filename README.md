@@ -1,31 +1,33 @@
 # fee-settlements
 
-fee-settlements fills in maintenance fee settlement sheets and saves them as images. The sheet is a single HTML page that works in a browser without a server.
+[한국어](docs/readme-ko.md) | English
 
-## Sheet
+fee-settlements fills in maintenance fee settlement sheets and saves them as images. It is a standalone program with no messaging-platform dependency, so any bot (Telegram, Discord, ...) can drive it as a subprocess.
 
-- The page is A4 landscape with two identical copies side by side. The left copy is filled in and the right copy follows it, so both always show the same values.
-- Each copy has three columns of item names and amounts, a monthly total, unpaid and late fee rows, a settlement total, meter readings for 전기, 수도, 가스, 온수, 난방 and 정수 over up to three months, the settlement period, signature lines, the bank account and the settlement amount.
-- The 이미지로 저장 button saves the whole sheet as one PNG at twice the page size.
+## Key Features
 
-## Calculation
-
-- The monthly total is the sum of the taxable total, the VAT and the tax-exempt total.
-- The VAT is 10% of the taxable total, rounded to the nearest 10 won.
-- The settlement amount is the settlement total followed by the won sign.
-- Meter readings accept digits and one decimal point and show thousands separators. A month's current reading is carried into the next month's previous reading.
-- Every calculated cell can be typed over.
+- A single HTML settlement sheet that works in a browser without a server
+- Two identical copies on one A4 landscape sheet: whatever is typed into the left copy appears in the right copy
+- Direct entry of item amounts, meter readings, the settlement period, the bank account and the signature lines
+- Automatic monthly total, VAT (10% of the taxable total, rounded to the nearest 10 won) and settlement amount, with every calculated cell still editable
+- Meter readings with thousands separators, where a month's current reading carries into the next month's previous reading
+- PNG export of the whole sheet at twice the page size
+- No install step — works via PYTHONPATH on any host with Python 3.11+
 
 ## Usage
 
-Open templates/bill.html in a browser, click a cell and type. The bank name label can be typed over as well.
-
-## Command line
-
 ```bash
-python -m maintenance_bills totals --readings-json '[{"name": "전기", "previous": 100, "current": 110}]'
+python -m maintenance_bills totals --readings-json '[{"name": "<meter name>", "previous": 100, "current": 110}]'
 ```
 
-The command needs Python 3.11 or later. It prints a single JSON line, `{"ok": true, "data": ...}` or `{"ok": false, "error": "..."}`, with exit code 0 or 1. The data holds the fixed fees and the metered amounts, which are usage times the unit price, and their total. Fixed fee amounts and meter unit prices are kept in bill_config.json.
+Every command prints a single JSON line to stdout: `{"ok": true, "data": ...}` or `{"ok": false, "error": "..."}`, exit code 0/1. Fixed fee amounts and meter unit prices are set in bill_config.json, and each reading name must match a meter name there.
 
-Data lives at data/ inside this repo by default; set `MAINTENANCE_BILLS_DATA_DIR` to override.
+To fill in a sheet by hand in a browser, open templates/bill.html, click a cell and type, then use the save button to download the PNG.
+
+## Integration
+
+An orchestrator clones this repo on the same host and adds it to `PYTHONPATH`, then invokes `python -m maintenance_bills <command> ...` as a subprocess and parses the single JSON line it prints.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
