@@ -19,7 +19,7 @@
   .notice:empty { display: none; }
   .row { display: flex; justify-content: space-between; min-height: 1.4em; }
   table { width: 100%; border-collapse: collapse; }
-  th, td { border: 1px solid #000; padding: 2px 4px; height: 5.8mm; text-align: center; }
+  th, td { border: 1px solid #000; padding: 2px 4px; height: 5.6mm; text-align: center; }
   td.num { text-align: right; }
   .items, .meters { table-layout: fixed; }
   tr.spacer td { height: 1.5mm; padding: 0; border: none; }
@@ -61,6 +61,7 @@
       <thead><tr><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th><th class="gap"></th><th>구분</th><th>검침월</th><th>전월</th><th>당월</th><th>사용량</th></tr></thead>
       <tbody data-field="meters"></tbody>
     </table>
+    <p>- 중간관리비 정산기간 : <span data-field="period"></span></p>
     <div class="sign">
       <div class="row"><span class="field">전출자 성명 <span class="line" data-field="out-name"></span> (인)</span><span class="field">연락처 : <span class="line" data-field="out-contact"></span></span></div>
       <div class="row"><span class="field">전입자 성명 <span class="line" data-field="in-name"></span> (인)</span><span class="field">연락처 : <span class="line" data-field="in-contact"></span></span></div>
@@ -115,7 +116,7 @@
   // Every fillable cell is editable on the left half only; the right half mirrors it.
   const EDITABLE = [
     '[data-field="address"]', '[data-field="area"]',
-    '[data-field="month-total"]', '[data-field="unpaid"]', '[data-field="late-fee"]', '[data-field="settle-total"]', '[data-field="out-name"]', '[data-field="out-contact"]',
+    '[data-field="period"]', '[data-field="month-total"]', '[data-field="unpaid"]', '[data-field="late-fee"]', '[data-field="settle-total"]', '[data-field="out-name"]', '[data-field="out-contact"]',
     '[data-field="in-name"]', '[data-field="in-contact"]', '[data-field="account"]', '[data-field="settlement"]',
     '[data-field="fees"] td:not(.gap)', '[data-field="meters"] td.num',
   ].join(",");
