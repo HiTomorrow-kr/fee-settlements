@@ -10,3 +10,6 @@ HISTORY_PATH = os.path.join(DATA_DIR, "history.json")
 IMAGES_DIR = os.path.join(DATA_DIR, "bills")
 
 TEMPLATES_DIR = os.path.join(_REPO_ROOT, "templates")
+
+# Fixed fee amounts and meter unit prices are edited by hand in this file.
+CONFIG_PATH = os.path.join(_REPO_ROOT, "bill_config.json")
