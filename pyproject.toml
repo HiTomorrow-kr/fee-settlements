@@ -17,3 +17,6 @@ fee-settlements = "maintenance_bills.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["maintenance_bills*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

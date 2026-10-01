@@ -29,6 +29,12 @@ python -m maintenance_bills totals --readings-json '[{"name": "<meter name>", "p
 
 오케스트레이터는 이 저장소를 같은 서버에 클론하고 `PYTHONPATH`에 추가한 뒤, `python -m maintenance_bills <command> ...`를 서브프로세스로 실행하고 출력되는 JSON 한 줄을 파싱한다.
 
+## 테스트
+
+```bash
+python -m pytest
+```
+
 ## 라이선스
 
 MIT — [LICENSE](../LICENSE) 참고.

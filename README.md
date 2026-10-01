@@ -29,6 +29,12 @@ To fill in a sheet by hand in a browser, open templates/bill.html, click a cell 
 
 An orchestrator clones this repo on the same host and adds it to `PYTHONPATH`, then invokes `python -m maintenance_bills <command> ...` as a subprocess and parses the single JSON line it prints.
 
+## Testing
+
+```bash
+python -m pytest
+```
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
