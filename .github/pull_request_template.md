@@ -1,7 +1,5 @@
 ## Description
 
-<!-- What does this PR change, and why? -->
-
 ## Type of change
 
 - [ ] feat: a new feature
@@ -14,14 +12,10 @@
 
 ## Related issues
 
-<!-- Fixes #123 -->
-
-## How has this been tested?
-
-<!-- Describe what you ran or checked. -->
+## How was this verified?
 
 ## Checklist
 
 - [ ] I have reviewed my own changes
 - [ ] I have updated the documentation where needed
-- [ ] The PR title follows the commit type format (e.g. `feat: add backup count`)
+- [ ] The PR title follows the commit type format (e.g. feat: add backup count)
