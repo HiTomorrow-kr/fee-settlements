@@ -2,41 +2,35 @@
 
 [한국어](docs/readme-ko.md) | English
 
-fee-settlements fills in maintenance fee settlement sheets and saves them as images. It is a standalone program with no messaging-platform dependency, so any bot (Telegram, Discord, ...) can drive it as a subprocess.
+fee-settlements fills in maintenance fee settlement sheets and exports them as PNG or PDF.
 
 ## Key Features
 
-- A settlement sheet page that works in a browser without a server
-- Two identical copies on one A4 landscape sheet: whatever is typed into the left copy appears in the right copy
-- Direct entry of item amounts, meter readings, the settlement period, the bank account and the signature lines
-- Automatic monthly total, VAT (10% of the taxable total, rounded to the nearest 10 won), settlement total and settlement amount, with every calculated cell still editable
-- Meter readings with thousands separators, where a month's current reading carries into the next month's previous reading
-- PNG export of the whole sheet at twice the page size
-- Print button for printing the sheet on one A4 landscape page
-- No install step — works via PYTHONPATH on any host with Python 3.11+
+- Fill in the sheet in a browser, with no server
+- Monthly total, VAT and settlement amount are calculated automatically
+- Export the sheet as a PNG, or print a saved sheet to an A4 landscape PDF
+
+## Getting Started
+
+```bash
+git clone https://github.com/HiTomorrow-kr/fee-settlements.git
+cd fee-settlements
+pip install -e .
+```
 
 ## Usage
+
+To fill in a sheet by hand, open templates/bill.html in a browser, click a cell and type, then use the save button to download a PNG.
+
+To calculate totals or print a saved sheet from the command line:
 
 ```bash
 python -m fee_settlements totals --readings-json '[{"name": "<meter name>", "previous": 100, "current": 110}]'
 python -m fee_settlements generate --state-file sheet.json --language en --output sheet.pdf
 ```
 
-Every command prints a single JSON line to stdout: `{"ok": true, "data": ...}` or `{"ok": false, "error": "..."}`, exit code 0/1. Fixed fee amounts and meter unit prices are set in bill_config.json, and each reading name must match a meter name there.
-
-The generate command fills the page with a sheet saved by its Save JSON button and prints it to an A4 landscape PDF. It needs Chrome.
-
-To fill in a sheet by hand in a browser, open templates/bill.html, click a cell and type, then use the save button to download the PNG.
-
-## Integration
-
-An orchestrator clones this repo on the same host and adds it to `PYTHONPATH`, then invokes `python -m fee_settlements <command> ...` as a subprocess and parses the single JSON line it prints.
-
-## Testing
-
-```bash
-python -m pytest
-```
+- Set fixed fee amounts and meter unit prices in bill_config.json. Each reading name must match a meter name there.
+- `generate` prints a sheet saved with the Save JSON button. It needs Chrome.
 
 ## License
 
